@@ -6,37 +6,66 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (inputBox.value === '') {
             alert("You must write something!");
         } else {
-            let li = document.createElement("li");
-            li.innerText = inputBox.value; // Use innerText for text content
-            let span = document.createElement("span");
-            span.textContent = "\u00D7"; // Adds the "×" character
-            span.className = "close"; // Add a class to style or identify the span
-            li.appendChild(span);
-            listContainer.appendChild(li);
-            inputBox.value = ""; // Clear the input box after adding the task
-
-            // Adding click event to the newly created span for removal
-            span.onclick = function() {
-                this.parentElement.remove();
-            };
+            createTask(inputBox.value);
+            saveData();
         }
     }
 
-    // Event listener for the Enter key in the input box
+    function createTask(taskText) {
+        let li = document.createElement("li");
+        li.innerText = taskText; // Use innerText for text content
+        
+        let span = document.createElement("span");
+        span.textContent = "\u00D7"; // Adds the "×" character
+        span.className = "close"; // Add a class to style or identify the span
+        span.onclick = function() {
+            this.parentElement.remove();
+            saveData();
+        };
+
+        li.appendChild(span);
+        listContainer.appendChild(li);
+        inputBox.value = ""; // Clear the input box after adding the task
+    }
+
     inputBox.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') { // Checking if the pressed key is Enter
+ 
+        if (e.key === 'Enter') {
             addTask();
             e.preventDefault(); // Prevent the default Enter key action
         }
     });
 
-    // Event delegation for toggling 'checked' class on list items
+    
+
     listContainer.addEventListener("click", function(e) {
         if (e.target.tagName === "LI") {
             e.target.classList.toggle("checked");
+            saveData();
         }
     }, false);
 
-    // Attach addTask function to the button via JS for click action
     document.querySelector(".todo-app button").onclick = addTask;
+
+    function saveData() {
+        localStorage.setItem("data", listContainer.innerHTML);
+    }
+
+    function showTask() {
+        const savedData = localStorage.getItem("data");
+        if (savedData) {
+            listContainer.innerHTML = savedData;
+            // Reattach event listeners to the spans after loading
+            const spans = listContainer.getElementsByClassName("close");
+            for (let span of spans) {
+                span.onclick = function() {
+                    this.parentElement.remove();
+                    saveData();
+                };
+            }
+        }
+    }
+
+    // Call showTask to display tasks saved in localStorage
+    showTask();
 });
